@@ -1,50 +1,43 @@
-﻿ //Note: Inspired by and uses some code found here: http://forum.unity3d.com/threads/windows-api-calls.127719/
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+using UnityEngine;
 
- using System.Collections;
- using System.Runtime.InteropServices;
- using System;
- using UnityEngine; // Pro and Free!!!
+public class TransparentWindow : MonoBehaviour
+{
+    [DllImport("user32.dll")]
+    public static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
 
- //WARNING!! Running this code inside Unity when not in a build will make the entire development environment transparent
- //Restarting Unity would however resolve
+    [DllImport("user32.dll")]
+    private static extern IntPtr GetActiveWindow();
 
- public class TransparentWindow : MonoBehaviour {
-     [SerializeField] private Material m_Material;
-     private struct MARGINS {
-         public int cxLeftWidth;
-         public int cxRightWidth;
-         public int cyTopHeight;
-         public int cyBottomHeight;
-     }
+    private struct MARGINS
+    {
+        public int cxLeftWidth;
+        public int cxRightWidht;
+        public int cyTopHeight;
+        public int cyBottomHeight;
+    }
 
-     [DllImport ("user32.dll")]
-     private static extern IntPtr GetActiveWindow ();
-     [DllImport ("user32.dll")]
-     private static extern int SetWindowLong (IntPtr hWnd, int nIndex, uint dwNewLong);
-     [DllImport ("user32.dll")]
-     static extern bool ShowWindowAsync (IntPtr hWnd, int nCmdShow);
-     [DllImport ("user32.dll", EntryPoint = "SetLayeredWindowAttributes")]
-     static extern int SetLayeredWindowAttributes (IntPtr hwnd, int crKey, byte bAlpha, int dwFlags);
-     [DllImport ("user32.dll", EntryPoint = "SetWindowPos")]
-     private static extern int SetWindowPos (IntPtr hwnd, int hwndInsertAfter, int x, int y, int cx, int cy, int uFlags);
-     [DllImport ("Dwmapi.dll")]
-     private static extern uint DwmExtendFrameIntoClientArea (IntPtr hWnd, ref MARGINS margins);
-     const int GWL_STYLE = -16;
-     const uint WS_POPUP = 0x80000000;
-     const uint WS_VISIBLE = 0x10000000;
-     const int HWND_TOPMOST = -1;
-     void Start () {
-       #if !UNITY_EDITOR // You really don't want to enable this in the editor..
-         int fWidth = Screen.width;
-         int fHeight = Screen.height;
-         var margins = new MARGINS () { cxLeftWidth = -1 };
-         var hwnd = GetActiveWindow ();
-         SetWindowLong (hwnd, GWL_STYLE, WS_POPUP | WS_VISIBLE);
-         // Transparent windows with click through
-         SetWindowLong (hwnd, -20, 524288 | 32); //GWL_EXSTYLE=-20; WS_EX_LAYERED=524288=&h80000, WS_EX_TRANSPARENT=32=0x00000020L
-         SetLayeredWindowAttributes (hwnd, 0, 0, 2); // Transparency=51=20%, LWA_ALPHA=2
-         SetWindowPos (hwnd, HWND_TOPMOST, 0, 0, fWidth, fHeight, 32 | 64); //SWP_FRAMECHANGED = 0x0020 (32); //SWP_SHOWWINDOW = 0x0040 (64)
-         DwmExtendFrameIntoClientArea (hwnd, ref margins);
-        #endif
-     }
- }
+    [DllImport("Dwmapi.dll")]
+    private static extern uint DwmExtendFrameIntoClientArea(IntPtr hwnd, ref MARGINS margins);
+
+    // Start is called before the first frame update
+    void Start()
+    {
+        MessageBox(new IntPtr(0), "Hello World", "Hello Dialog", 0);
+
+        IntPtr hWnd = GetActiveWindow();
+
+        MARGINS margins = new MARGINS { cxLeftWidth = -1 };
+
+        DwmExtendFrameIntoClientArea(hWnd, ref margins);
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        
+    }
+}
