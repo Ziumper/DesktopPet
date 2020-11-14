@@ -15,8 +15,13 @@ using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 public class TransparentWindow : MonoBehaviour {
+
+    [SerializeField]
+    protected GraphicRaycaster Raycaster;
 
     [DllImport("user32.dll")]
     public static extern int MessageBox(IntPtr hWnd, string text, string caption, uint type);
@@ -68,12 +73,20 @@ public class TransparentWindow : MonoBehaviour {
 
         SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, 0);
 #endif
-
+        
         Application.runInBackground = true;
     }
 
     private void Update() {
-        SetClickthrough(Physics2D.OverlapPoint(CodeMonkey.Utils.UtilsClass.GetMouseWorldPosition()) == null);
+        PointerEventData pe = new PointerEventData(EventSystem.current);
+        pe.position = Input.mousePosition;
+        List<RaycastResult> hits = new List<RaycastResult>();
+        this.Raycaster.Raycast(pe, hits);
+        if(hits.Count > 0)
+        {
+            Debug.Log("hiting the ground!");
+        } 
+        SetClickthrough(hits.Count == 0);
     }
 
     private void SetClickthrough(bool clickthrough) {
